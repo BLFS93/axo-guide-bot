@@ -321,6 +321,7 @@ bot.on("message", async (ctx, next) => {
   }
 
   const text = ctx.message.text || "";
+  console.log("MESSAGE RECEIVED:", text);
   const lowerText = text.toLowerCase();
   const userId = ctx.from.id;
   const now = Date.now();
