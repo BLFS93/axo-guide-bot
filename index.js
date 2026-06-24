@@ -12,14 +12,16 @@ const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 const userMessages = new Map();
 const userViolations = new Map();
 
-const SPAM_TIME_WINDOW = 10 * 1000;
-const SPAM_MAX_MESSAGES = 4;
+const SPAM_TIME_WINDOW = 30 * 1000;
+const SPAM_MAX_MESSAGES = 3;
+
 const SECOND_VIOLATION_WINDOW = 5 * 60 * 1000;
 const RESET_AFTER = 24 * 60 * 60 * 1000;
 
 const officialLinks = [
   "stayaxo.com",
   "https://stayaxo.com",
+  "www.stayaxo.com",
   "t.me/AXO_Community",
   "https://t.me/AXO_Community",
   "x.com/AxoOnPump",
@@ -52,8 +54,10 @@ function containsLink(text) {
 }
 
 function isOfficialLink(text) {
+  const lower = text.toLowerCase();
+
   return officialLinks.some((link) =>
-    text.toLowerCase().includes(link.toLowerCase())
+    lower.includes(link.toLowerCase())
   );
 }
 
@@ -164,7 +168,20 @@ Stay AXO.`;
 
   await ctx.telegram.restrictChatMember(ctx.chat.id, userId, {
     permissions: {
-      can_send_messages: false
+      can_send_messages: false,
+      can_send_audios: false,
+      can_send_documents: false,
+      can_send_photos: false,
+      can_send_videos: false,
+      can_send_video_notes: false,
+      can_send_voice_notes: false,
+      can_send_polls: false,
+      can_send_other_messages: false,
+      can_add_web_page_previews: false,
+      can_change_info: false,
+      can_invite_users: true,
+      can_pin_messages: false,
+      can_manage_topics: false
     },
     until_date: untilDate
   });
@@ -177,7 +194,6 @@ async function handleViolation(ctx, reason) {
   const now = Date.now();
 
   const current = userViolations.get(userId);
-
   let level = 1;
 
   if (current) {
@@ -206,7 +222,23 @@ async function handleViolation(ctx, reason) {
     console.log("Could not delete message:", error.message);
   }
 
-  await muteUser(ctx, userId, level);
+  try {
+    await muteUser(ctx, userId, level);
+  } catch (error) {
+    console.log("Could not mute user:", error.message);
+
+    await ctx.reply(
+`🚨 AXO Guide
+
+Suspicious activity detected, but I could not mute the user.
+
+Please check my admin permissions.
+
+Stay Curious.
+Stay AXO.`
+    );
+  }
+
   await sendAdminReport(ctx, reason);
 }
 
@@ -283,19 +315,6 @@ Stay AXO.`
   );
 });
 
-bot.command("chatid", async (ctx) => {
-  const member = await ctx.getChatMember(ctx.from.id);
-
-  if (
-    member.status !== "creator" &&
-    member.status !== "administrator"
-  ) {
-    return;
-  }
-
-  ctx.reply(`Chat ID: ${ctx.chat.id}`);
-});
-
 bot.on("new_chat_members", (ctx) => {
   ctx.reply(
 `Welcome to AXO 🩷🌎
@@ -320,11 +339,13 @@ bot.on("message", async (ctx, next) => {
     return next();
   }
 
-  const text = ctx.message.text || "";
-  console.log("MESSAGE RECEIVED:", text);
+  const text = ctx.message.text || ctx.message.caption || "";
   const lowerText = text.toLowerCase();
   const userId = ctx.from.id;
   const now = Date.now();
+
+  console.log("MESSAGE RECEIVED:", text);
+  console.log("USER ID:", userId);
 
   const reportCommands = ["/spam", "/block", "/ban", "/report", "/scam", "/blockieren"];
 
@@ -344,19 +365,28 @@ Stay AXO.`
   }
 
   const admin = await isAdmin(ctx);
-  if (admin) return next();
+  console.log("IS ADMIN:", admin);
+
+  if (admin) {
+    return next();
+  }
 
   if (containsLink(text) && !isOfficialLink(text)) {
+    console.log("UNOFFICIAL LINK DETECTED");
     await handleViolation(ctx, "Unofficial link or suspicious link posted.");
     return;
   }
 
   const timestamps = userMessages.get(userId) || [];
   const recentMessages = timestamps.filter((time) => now - time < SPAM_TIME_WINDOW);
+
   recentMessages.push(now);
   userMessages.set(userId, recentMessages);
 
+  console.log("RECENT MESSAGES:", recentMessages.length);
+
   if (recentMessages.length > SPAM_MAX_MESSAGES) {
+    console.log("SPAM DETECTED");
     await handleViolation(ctx, "Spam detected: too many messages in a short time.");
     return;
   }
