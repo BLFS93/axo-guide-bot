@@ -283,6 +283,19 @@ Stay AXO.`
   );
 });
 
+bot.command("chatid", async (ctx) => {
+  const member = await ctx.getChatMember(ctx.from.id);
+
+  if (
+    member.status !== "creator" &&
+    member.status !== "administrator"
+  ) {
+    return;
+  }
+
+  ctx.reply(`Chat ID: ${ctx.chat.id}`);
+});
+
 bot.on("new_chat_members", (ctx) => {
   ctx.reply(
 `Welcome to AXO 🩷🌎
@@ -302,34 +315,35 @@ Do not trust fake contract addresses.`
 
 bot.on("message", async (ctx, next) => {
   if (!ctx.message || !ctx.from || !ctx.chat) return next();
-  
+
   if (ctx.chat.type === "private") {
-  return next();
-}
+    return next();
+  }
+
   const text = ctx.message.text || "";
   const lowerText = text.toLowerCase();
   const userId = ctx.from.id;
   const now = Date.now();
 
-  const admin = await isAdmin(ctx);
-  if (admin) return next();
-
   const reportCommands = ["/spam", "/block", "/ban", "/report", "/scam", "/blockieren"];
 
-if (reportCommands.some((cmd) => lowerText.startsWith(cmd))) {
-  await sendAdminReport(ctx, "User submitted a report command.");
+  if (reportCommands.some((cmd) => lowerText.startsWith(cmd))) {
+    await sendAdminReport(ctx, "User submitted a report command.");
 
-  await ctx.reply(
+    await ctx.reply(
 `🚨 AXO Guide
 
 Report forwarded to admins.
 
 Stay Curious.
 Stay AXO.`
-  );
+    );
 
-  return;
-}
+    return;
+  }
+
+  const admin = await isAdmin(ctx);
+  if (admin) return next();
 
   if (containsLink(text) && !isOfficialLink(text)) {
     await handleViolation(ctx, "Unofficial link or suspicious link posted.");
