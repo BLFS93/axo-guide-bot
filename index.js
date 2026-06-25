@@ -275,28 +275,11 @@ ${X_URL}`
 });
 
 bot.command("ca", (ctx) => {
-  if (CONTRACT_ADDRESS === "NOT_LAUNCHED") {
-    ctx.reply(
-`⚠️ $AXO has not launched yet.
+  ctx.reply(CONTRACT_ADDRESS);
+});
 
-There is currently NO official contract address.
-
-Any CA posted before the official launch is fake.
-
-Always verify through the official AXO website and Telegram.
-
-Stay Curious.
-Stay AXO.`
-    );
-  } else {
-    ctx.reply(
-`Official $AXO CA:
-${CONTRACT_ADDRESS}
-
-Stay Curious.
-Stay AXO.`
-    );
-  }
+bot.hears(/^contract address$/i, (ctx) => {
+  ctx.reply(CONTRACT_ADDRESS);
 });
 
 bot.command("rules", (ctx) => {
