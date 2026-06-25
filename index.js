@@ -247,7 +247,7 @@ bot.start((ctx) => {
 `Welcome to AXO 🩷🌎
 
 Born in Mexico.
-Destined for the world. 🇲🇽
+Destined for the world.
 
 Stay Curious.
 Stay AXO.
@@ -302,6 +302,8 @@ bot.on("new_chat_members", (ctx) => {
   ctx.reply(
 `Welcome to AXO 🩷🌎
 
+The Great AXO Journey has begun.
+
 Born in Mexico.
 Destined for the world.
 
@@ -310,8 +312,7 @@ Stay AXO.
 
 Use /links to find all official AXO links.
 
-⚠️ $AXO has not launched yet.
-Do not trust fake contract addresses.`
+Use /ca to get the official contract address.`
   );
 });
 
