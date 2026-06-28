@@ -3,14 +3,6 @@ const { Telegraf } = require("telegraf");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-bot.on("message", (ctx, next) => {
-  console.log("GROUP CHECK:");
-  console.log("Chat ID:", ctx.chat?.id);
-  console.log("Chat Title:", ctx.chat?.title);
-  console.log("Chat Type:", ctx.chat?.type);
-  return next();
-});
-
 
 const WEBSITE_URL = process.env.WEBSITE_URL || "https://stayaxo.com";
 const TELEGRAM_URL = process.env.TELEGRAM_URL || "https://t.me/AXO_Community";
