@@ -11,7 +11,6 @@ bot.on("message", (ctx, next) => {
   return next();
 });
 
-const WEBSITE_URL = process.env.WEBSITE_URL || "https://stayaxo.com";
 
 const WEBSITE_URL = process.env.WEBSITE_URL || "https://stayaxo.com";
 const TELEGRAM_URL = process.env.TELEGRAM_URL || "https://t.me/AXO_Community";
